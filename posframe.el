@@ -496,8 +496,14 @@ You can use `posframe-delete-all' to delete all posframes."
                        :font-height font-height
                        :font-width font-width
                        :posframe posframe
-                       :posframe-width (frame-pixel-width posframe)
-                       :posframe-height (frame-pixel-height posframe)
+                       :posframe-width
+                       (if width
+                           (* (default-font-width) width)
+                         (frame-pixel-width posframe))
+                       :posframe-height
+                       (if height
+                           (* (default-line-height) height)
+                         (frame-pixel-height posframe))
                        :posframe-buffer buffer
                        :parent-frame parent-frame
                        :parent-frame-width parent-frame-width
@@ -847,8 +853,14 @@ will be removed."
         (max-height (plist-get size-info :max-height))
         (min-width (plist-get size-info :min-width))
         (min-height (plist-get size-info :min-height)))
-    (when height (set-frame-height posframe height))
-    (when width (set-frame-width posframe width))
+    (cond
+     ((and width height)
+      (set-frame-size posframe
+                      (* (default-font-width) width)
+                      (* (default-line-height) height)
+                      t))
+     (height (set-frame-height posframe height))
+     (width (set-frame-width posframe width)))
     (unless (and height width)
       (posframe--fit-frame-to-buffer
        posframe max-height min-height max-width min-width
